@@ -1,0 +1,205 @@
+<!DOCTYPE >
+<html>
+	<head>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.0/jquery.validate.min.js"></script>
+		<script>
+		var map;
+		  	function initMap() {
+				map = new google.maps.Map(document.getElementById('map'), {
+					center: {lat: 14.3783, lng:  24.9042},
+					zoom: 15,
+					mapTypeId: google.maps.MapTypeId.SATELLITE
+				});
+				
+			}
+		$(function(){
+
+		  	function tile2long(x,z) {
+		        return (x/Math.pow(2,z)*360-180);
+			}
+			function tile2lat(y,z) {
+				var n=Math.PI-2*Math.PI*y/Math.pow(2,z);
+				return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
+			}
+
+			function showTileOnMap(x, y, z){
+				var lat = tile2lat(y,z);
+				var lat_end = tile2lat(y+1,z);
+				var lng = tile2long(x,z);
+				var lng_end = tile2long(x+1,z);
+
+				$('.lat_info').html(lat);
+				$('.lng_info').html(lng);
+				$('.zoom_info').html(z);
+
+				var rectangle = new google.maps.Rectangle({
+		            strokeColor: '#FF0000',
+		            strokeOpacity: 1,
+		            strokeWeight: 1,
+		            fillColor: '#FF0000',
+		            fillOpacity: 0.35,
+		            map: map,
+		            bounds: {
+		              north: lat,
+		              south: lat_end,
+		              east: lng_end,
+		              west: lng
+		            }
+		          });
+
+
+				var marker = new google.maps.Marker({
+		          position: {lat: lat, lng: lng},
+		          map: map
+		        });
+
+		        var marker = new google.maps.Marker({
+		          position: {lat: lat_end, lng: lng},
+		          map: map
+		        });
+		        var marker = new google.maps.Marker({
+		          position: {lat: lat, lng: lng_end},
+		          map: map
+		        });
+		        var marker = new google.maps.Marker({
+		          position: {lat: lat_end, lng: lng_end},
+		          map: map
+		        });
+			}
+
+			
+			function newMapCenter(newLat,newLng){
+				map.setCenter({
+					lat : newLat,
+					lng : newLng
+				});
+			}
+
+			function getImageUrl(x,y,z){
+				var imageSource = 'https://mt1.google.com/vt/lyrs=s&x=' + x + '&y=' + y + '&z=' + z;
+				return imageSource;
+			}
+
+			function  getGoogleUrl(lat,lng,zoom){
+				//https://www.google.com/maps/@54.3742124,12.9865147,13z
+				var googleUrl = 'https://www.google.com/maps/@'+lat+'.'+lng+',12z'
+				$(".googleUrl").attr("href", googleUrl);
+			}
+			function checkImageSrc(url) {
+				var image = new Image(); 
+				image.src = url;
+				if (image.width == 0) {
+					return false
+				} else {
+					return true
+				}
+			}
+
+			$('#submit').click(function() {
+				var x = parseInt($('#x').val());
+			    var y = parseInt($('#y').val());
+			    var z = parseInt($('#z').val());
+
+				if ($("#form").valid() == true){
+					imageSource = getImageUrl(x,y,z);
+					if (checkImageSrc(imageSource) === true) {
+						alert("Error! One or more parameter values are not valid. Please check x, y and zoom!");
+					}
+					else{
+
+						$(".tile").attr("src", imageSource);
+						newMapCenter(tile2lat(y,z),tile2long(x,z));
+						showTileOnMap(x, y, z);
+					}			
+				}
+
+			  });
+		});
+
+		</script>
+	</head>
+	<body>
+	<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+		
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3" >
+		<form class="form-horizontal"  id="form">
+        <div class="row" style="padding: 30px !important;">
+        <div class="form-group">
+	      <label for="lat" class="col-xs-3 col-form-label">X</label>
+	      <div class="col-xs-7">
+	        <input type="number" class="form-control" id="x" placeholder="x" required>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label for="lat" class="col-xs-3 col-form-label">Y</label>
+	      <div class="col-xs-7">
+	        <input type="number" class="form-control" id="y" placeholder="y" required>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label for="lat" class="col-xs-3 col-form-label">Zoom</label>
+	      <div class="col-xs-7">
+	        <input type="number" class="form-control" id="z" placeholder="z" required>
+	      </div>
+	    </div>
+        <div class="form-group center">
+             <input id="submit" type="button" value="Show location" />
+        </div>
+        </div>
+      </form>
+
+		<img class="tile" src="img.png">
+		<div class="layerInfo">
+			<p>   Lat:<span class="lat_info"></span> </p>
+			<p>   Lng:<span class="lng_info"></span> </p>
+			<p>   Zoom:<span class="zoom_info"></span> </p>
+			<p>   Url: <a href="#" class="googleUrl"> <span class="url_info"></span></a> </p>
+		</div>
+		</div>
+		<div class="col-md-9 map">
+		<div id="map" style="width: 100%; height: 100%;"></div>
+		</div>
+	</div>
+	</div>
+
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOwTt9KE2B_fZk7EdkG6IaqGqgIRVnRPw&callback=initMap"
+		type="text/javascript"></script>
+	</body>
+</html>
+
+
+<style type="text/css">
+
+	img{
+		float:left;
+	}	
+	.layerInfo{
+		float:left;
+		height:100px;
+		width:200px;
+		margin-left:20px;
+	}
+	.layerInfo>p{
+		margin-top: 10px;
+	}
+
+	.clear{
+		clear:both;
+	}
+	.map{
+		padding: 20px;
+		
+		
+	}
+	
+ </style>
