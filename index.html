@@ -1,6 +1,7 @@
 <!DOCTYPE >
 <html>
 	<head>
+		<title>Tile To Map</title>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -10,7 +11,7 @@
 		  	function initMap() {
 				map = new google.maps.Map(document.getElementById('map'), {
 					center: {lat: 14.3783, lng:  24.9042},
-					zoom: 15,
+					zoom: 16,
 					mapTypeId: google.maps.MapTypeId.SATELLITE
 				});
 				
@@ -84,11 +85,11 @@
 			}
 
 			function  getGoogleUrl(lat,lng,zoom){
-				//https://www.google.com/maps/@54.3742124,12.9865147,13z
-				var googleUrl = 'https://www.google.com/maps/@'+lat+'.'+lng+',12z'
-				$(".googleUrl").attr("href", googleUrl);
+				//http://maps.google.com/maps?q=24.197611,120.780512
+				var googleUrl = 'http://maps.google.com/maps?q='+lat+','+lng
+				return googleUrl
 			}
-			function checkImageSrc(url) {
+			function checkForValidUrl(url) {
 				var image = new Image(); 
 				image.src = url;
 				if (image.width == 0) {
@@ -104,13 +105,16 @@
 			    var z = parseInt($('#z').val());
 
 				if ($("#form").valid() == true){
-					imageSource = getImageUrl(x,y,z);
-					if (checkImageSrc(imageSource) === true) {
+					var imageSource = getImageUrl(x,y,z);
+					var googleUrl = getGoogleUrl(tile2lat(y,z),tile2long(x,z));
+					if (checkForValidUrl(imageSource) === true && checkForValidUrl(googleUrl) === true) {
 						alert("Error! One or more parameter values are not valid. Please check x, y and zoom!");
 					}
 					else{
 
 						$(".tile").attr("src", imageSource);
+						$('.url_info').html(googleUrl);
+						$(".googleUrl").attr("href", googleUrl);
 						newMapCenter(tile2lat(y,z),tile2long(x,z));
 						showTileOnMap(x, y, z);
 					}			
@@ -158,12 +162,12 @@
         </div>
       </form>
 
-		<img class="tile" src="img.png">
+		<img class="tile" src="/tile-to-map/img.png">
 		<div class="layerInfo">
-			<p>   Lat:<span class="lat_info"></span> </p>
-			<p>   Lng:<span class="lng_info"></span> </p>
-			<p>   Zoom:<span class="zoom_info"></span> </p>
-			<p>   Url: <a href="#" class="googleUrl"> <span class="url_info"></span></a> </p>
+			<p>   <b>Lat </b>:<span class="lat_info"></span> </p>
+			<p>   <b>Lng:</b><span class="lng_info"></span> </p>
+			<p>   <b>Zoom:</b><span class="zoom_info"></span> </p>
+			<p>   <b>Google Url: </b><a href="#" class="googleUrl" target="_blank"><span class="url_info"></span></a> </p>
 		</div>
 		</div>
 		<div class="col-md-9 map">
@@ -202,4 +206,4 @@
 		
 	}
 	
- </style>
+ </style> </style>
